@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "baseUrl": "./",
+        "paths": {
+            "@/*":["scr/*"]
+        }
+    },
+    "exclude": ["node_modules","dist"]
+}

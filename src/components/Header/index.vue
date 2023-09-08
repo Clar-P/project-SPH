@@ -84,15 +84,15 @@ export default {
             
             // 面试题四：路由组件能不能传递props数据
             // 可以：三种写法
-            this.$router.push({
-                name:'search',
-                params:{
-                    keyword:this.keyword
-                },
-                query:{
-                    k:this.keyword.toUpperCase()
-                } 
-            })   
+            
+            // 如果有query参数也带过去(合并参数)
+            // 解决的是如果从三级路由点击搜索后原三级路由所携带的query参数被搜索框的参数覆盖的问题
+            if(this.$route.query){
+                let location = {name:'search',params:{keyword:this.keyword || undefined}}
+                location.query = this.$route.query
+                this.$router.push(location)
+            }
+
         }
     }
 }

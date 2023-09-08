@@ -12,6 +12,8 @@ Vue.config.productionTip = false
 // 引入仓库
 import store from '@/store'
 
+// 引入MockServe.js ---- mock数据
+import '@/mock/mockServe'
 // 测试接口
 /* import  {reqCategoryList}  from '@/api'
 reqCategoryList() */

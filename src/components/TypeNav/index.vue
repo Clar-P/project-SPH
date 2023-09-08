@@ -1,7 +1,65 @@
 <template>
   <div class="type-nav">
     <div class="container">
-      <h2 class="all">全部商品分类</h2>
+      <div @mouseleave="leaveShow" @mouseenter="enterShow">
+        <!-- 事件委派|事件代理 -->
+        <h2 class="all">全部商品分类</h2>
+        <!-- 过渡动画 -->
+        <transition name="sort">
+          <div class="sort" v-show="show">
+            <div class="all-sort-list2" @click="goSearch">
+              <div
+                class="item"
+                v-for="(c1, index) in categoryList"
+                :key="c1.categoryId"
+                :class="{ cur: currentIndex == index }"
+              >
+                <h3 @mouseenter="changeIndex(index)">
+                  <a
+                    :data-categoryName="c1.categoryName"
+                    :data-category1Id="c1.categoryId"
+                    >{{ c1.categoryName }}</a
+                  >
+                </h3>
+                <!-- 二级、三级分类 -->
+                <div
+                  class="item-list clearfix"
+                  :style="{ display: currentIndex == index ? 'block' : 'none' }"
+                >
+                  <div
+                    class="subitem"
+                    v-for="(c2, index) in c1.categoryChild"
+                    :key="c2.categoryId"
+                  >
+                    <dl class="fore">
+                      <dt>
+                        <a
+                          :data-categoryName="c2.categoryName"
+                          :data-category2Id="c2.categoryId"
+                          >{{ c2.categoryName }}</a
+                        >
+                      </dt>
+                      <dd>
+                        <em
+                          v-for="(c3, index) in c2.categoryChild"
+                          :key="c3.categoryId"
+                        >
+                          <a
+                            :data-categoryName="c3.categoryName"
+                            :data-category3Id="c3.categoryId"
+                            >{{ c3.categoryName }}</a
+                          >
+                        </em>
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
+      </div>
+
       <nav class="nav">
         <a href="###">服装城</a>
         <a href="###">美妆馆</a>
@@ -12,46 +70,101 @@
         <a href="###">有趣</a>
         <a href="###">秒杀</a>
       </nav>
-      <div class="sort">
-        <div class="all-sort-list2">
-          <div class="item" v-for="(c1,index) in categoryList" :key="c1.categoryId">
-            <h3>
-              <a href="">{{ c1.categoryName }}</a>
-            </h3>
-            <div class="item-list clearfix">
-              <div class="subitem" v-for="(c2,index) in c1.categoryChild" :key="c2.categoryId">
-                <dl class="fore">
-                  <dt>
-                    <a href="">{{c2.categoryName}}</a>
-                  </dt>
-                  <dd>
-                    <em v-for="(c3,index) in c2.categoryChild" :key="c3.categoryId">
-                      <a href="">{{c3.categoryName}}</a>
-                    </em>
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script>
-import {mapState} from 'vuex'
+import { mapState } from "vuex";
+// 引入方式：是把lodash全部功能全部引入
+// import _ from 'lodash'
+// 最好的引入方式：按需加载,源码throttle采用的是默认暴露
+import throttle from "lodash/throttle";
 
 export default {
   name: "TypeNav",
-  // 组件挂载完毕：可以向服务器发请求
-  mounted(){
-      // 通过Vuex发送请求，获取数据，存储与仓库当中
-      this.$store.dispatch('home/categoryList')
+  data() {
+    return {
+      // 存储用户鼠标移上哪一个一级分类
+      currentIndex: -1,
+      show: true,
+    };
   },
-  computed:{
-      ...mapState('home',['categoryList'])
-  }
+  // 组件挂载完毕：可以向服务器发请求
+  mounted() {
+    //当组件挂载完毕，让show属性变为false
+    // 如果不是Home路由组件，将typeNav进行隐藏
+    if (this.$route.path != "/home") {
+      this.show = false;
+    }
+  },
+  computed: {
+    ...mapState("home", ["categoryList"]),
+  },
+  methods: {
+    // 鼠标移入修改响应式数据currentIndex属性
+    // throttle 回调函数别用箭头函数，可能会出现上下文this指向问题
+    changeIndex: throttle(function (index) {
+      // index：鼠标移上某个一级分类的元素的索引值
+      // 正常情况（用户慢慢的操作）： 鼠标进入，每一个一级分类h3，都会触发鼠标进入事件
+      // 非正常情况（用户操作很快）： 本身全部的一级分类都应该触发鼠标进入事件，但是经过测试，只有部分h3触发了
+      // 就是用户的行为过快，导致浏览器反应不过来,如果当前回调函数中有大量业务，有可能出现卡顿现象
+      this.currentIndex = index;
+    }, 50),
+    // 进行路由跳转的方法
+    goSearch(event) {
+      // 最好的解决方案：编程式路由导航 + 事件委派 (不委派的话要为每一个a标签绑定事件，一循环又是很多个回调事件))
+      // 利用事件委派存在的一些问题：1、点击的一定要是a标签   2、如何获取参数
+      // 点击a标签的时候，才会进行路由跳转【怎么确定点击的一定是a标签】
+      // 存在一个问题，即使你能确定点击的就是a标签，如何区分是一级、二级、还是三级标签
+
+      // 第一个问题：把子节点当中a标签，我加上自定义属性data-categoryName,其余的子节点都是没有的
+      let element = event.target;
+      // 获取到当前触发这个事件的节点【h3/a/dt/dl】，需要带有data-categoryname这样的节点【一定是a标签】
+      // 节点中有一个属性dataset属性，可以获取节点的自定义属性和属性值
+      let { categoryname, category1id, category2id, category3id } =
+        element.dataset;
+      // 如果标签身上有categoryname 属性一定是a标签
+      if (categoryname) {
+        //整理路由跳转的参数
+        let location = { name: "search" };
+        let query = { categoryName: categoryname };
+        // 一级分类、二级分类、三级分类的a标签
+        if (category1id) {
+          query.category1Id = category1id;
+        } else if (category2id) {
+          query.category2Id = category2id;
+        } else {
+          query.category3Id = category3id;
+        }
+        // 整理完参数
+        // 判断：如果路由跳转的时候，带有params参数，就把params参数一起带过去
+        
+        if(this.$route.params){
+            location.params = this.$route.params
+            // 动态的给location配置对象添加query参数
+            location.query = query;
+            // 路由跳转
+            this.$router.push(location);
+        }
+        
+      }
+    },
+    // 当鼠标移入的时候，让商品分类列表进行展示
+    // 一级分类鼠标移出的事件回调
+    enterShow() {
+      this.show = true;
+    },
+    // 当鼠标离开的时候，让商品分类列表进行隐藏
+    leaveShow() {
+      // 鼠标移出currentIndex,变为-1
+      this.currentIndex = -1;
+      // 判断如果是Search路由组件的时候才会执行
+      if (this.$route.path != "/home") {
+        this.show = false;
+      }
+    },
+  },
 };
 </script>
 
@@ -164,14 +277,24 @@ export default {
               }
             }
           }
-
-          &:hover {
-            .item-list {
-              display: block;
-            }
-          }
+        }
+        .cur {
+          background-color: blue;
         }
       }
+    }
+    // 过渡动画的样式
+    // 过渡动画开始状态（进入）
+    .sort-enter {
+      height: 0px;
+    }
+    // 过渡动画结束状态（进入）
+    .sort-enter-to {
+      height: 461px;
+    }
+    .sort-enter-active {
+      // 定义动画的时间/速率
+      transition: all 0.5s linear;
     }
   }
 }

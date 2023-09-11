@@ -1,4 +1,4 @@
-import { reqCategoryList, reqGetBannerList } from "@/api"
+import { reqCategoryList, reqGetBannerList, reqFloorList } from "@/api"
 
 // home模块的小仓库
 
@@ -9,7 +9,10 @@ export default {
         // state中数据默认初始值不能乱写，服务器返回的是对象就写对象，是数组就写数组
         categoryList :[],
         // 轮播图的数据
-        bannerList:[]
+        bannerList:[],
+        // floor组件的数据
+        floorList:[]
+
     },
     actions : {
         // 通过API里面的接口函数调用，向服务器发送请求，获取服务器的数据
@@ -27,6 +30,14 @@ export default {
             if(result.code === 200){
                 context.commit('GETBANNERLIST',result.data)
             }
+        },
+
+        // 获取floor数据
+        async getFloorList(context){
+            let result = await reqFloorList()
+            if(result.code === 200){
+                context.commit('GETFLOORLIST',result.data)
+            }
         }
     },
     // mutations是唯一修改states的地方
@@ -36,8 +47,12 @@ export default {
         },
         GETBANNERLIST(state,bannerList){
             state.bannerList = bannerList
+        },
+        GETFLOORLIST(state,floorList){
+            state.floorList = floorList
         }
     },
+    // 计算属性
     getters : {}
 
 }

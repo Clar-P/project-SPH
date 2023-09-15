@@ -23,6 +23,10 @@ import 'swiper/css/swiper.css'
 
 new Vue({
   render: h => h(App),
+  // 全局事件总线配置
+  beforeCreate(){
+    Vue.prototype.$bus = this
+  },
   // 注册理由：底下的写法KV一致省略V【router小写的】
   // 注册路由信息：当这里书写router的时候，组件身上都拥有$router,$route属性
   router,

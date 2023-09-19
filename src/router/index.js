@@ -7,6 +7,7 @@ import Home from '@/pages/Home'
 import Search from '@/pages/Search'
 import Login from '@/pages/Login'
 import Register from '@/pages/Register'
+import Detail from '@/pages/Detail'
 
 /* console.log(VueRouter.prototype); */
 // 先把VueRouter原型对象的push保存一份
@@ -41,6 +42,11 @@ VueRouter.prototype.replace = function(location,resolve,reject){
 export default new VueRouter({
     // 配置路由
     routes:[
+        {
+            path:'/detail/:skuId',
+            component:Detail,
+            meta:{showFooter:true}
+        },
         {
             path:'/',
             redirect:'/home',
@@ -78,5 +84,10 @@ export default new VueRouter({
             component:Register,
             meta:{showFooter:false}
         },
-    ]
+    ],
+    // 滚动行为
+    scrollBehavior(to,from,savedPosition){
+        // 返回的这个y=0,代表的滚动条在最上方
+        return {x:0,y:0}
+    }
 })

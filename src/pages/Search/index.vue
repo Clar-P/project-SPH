@@ -32,24 +32,15 @@
             <div class="navbar-inner filter">
               <!-- 价格的结构 -->
               <ul class="sui-nav">
-                <li class="active">
-                  <a href="#">综合</a>
+                <li :class="{active:isOne}" @click="changeOrder('1')">
+                  <a>综合<span v-show="isOne" class="iconfont" :class="{'icon-up':isAsc,'icon-down-arrow':isDesc}"></span>
+                  </a>
                 </li>
-                <li>
-                  <a href="#">销量</a>
+                <li :class="{active:isTwo}" @click="changeOrder('2')">
+                  <a>价格<span v-show="isTwo" class="iconfont" :class="{'icon-up':isAsc,'icon-down-arrow':isDesc}"></span>
+                  </a>
                 </li>
-                <li>
-                  <a href="#">新品</a>
-                </li>
-                <li>
-                  <a href="#">评价</a>
-                </li>
-                <li>
-                  <a href="#">价格⬆</a>
-                </li>
-                <li>
-                  <a href="#">价格⬇</a>
-                </li>
+                
               </ul>
             </div>
           </div>
@@ -64,9 +55,10 @@
               >
                 <div class="list-wrap">
                   <div class="p-img">
-                    <a href="item.html" target="_blank"
-                      ><img :src="good.defaultImg"
-                    /></a>
+                    <!-- 在路由跳转的时候带上参数id，params -->
+                    <router-link :to="`/detail/${good.id}`">
+                      <img :src="good.defaultImg"/>
+                    </router-link>
                   </div>
                   <div class="price">
                     <strong>
@@ -102,35 +94,7 @@
           </div>
 
           <!-- 分页器 -->
-          <div class="fr page">
-            <div class="sui-pagination clearfix">
-              <ul>
-                <li class="prev disabled">
-                  <a href="#">«上一页</a>
-                </li>
-                <li class="active">
-                  <a href="#">1</a>
-                </li>
-                <li>
-                  <a href="#">2</a>
-                </li>
-                <li>
-                  <a href="#">3</a>
-                </li>
-                <li>
-                  <a href="#">4</a>
-                </li>
-                <li>
-                  <a href="#">5</a>
-                </li>
-                <li class="dotted"><span>...</span></li>
-                <li class="next">
-                  <a href="#">下一页»</a>
-                </li>
-              </ul>
-              <div><span>共10页&nbsp;</span></div>
-            </div>
-          </div>
+          <Pagination :pageNo="searchParams.pageNo" :pageSize="searchParams.pageSize" :continues="5" :total="total" @getPageNo="getPageNo"></Pagination>
         </div>
       </div>
     </div>
@@ -138,7 +102,6 @@
 </template>
 
 <script>
-import { getAdapter } from "axios";
 import SearchSelector from "./SearchSelector/SearchSelector";
 import { mapGetters } from "vuex";
 
@@ -161,8 +124,8 @@ export default {
         categoryName: "",
         // 关键字
         keyword: "",
-        // 排序
-        order: "",
+        // 排序:初始状态应该是综合|降序
+        order: "1:desc",
         // 分液器用的：代表的是当前是第几页。默认就是第一页
         pageNo: 1,
         // 代表的是每一页展示几个数据
@@ -191,7 +154,19 @@ export default {
     this.getData();
   },
   computed: {
-    ...mapGetters("search", ["goodsList"]),
+    ...mapGetters("search", ["goodsList","total"]),
+    isOne(){
+      return this.searchParams.order.indexOf('1') != -1
+    },
+    isTwo(){
+      return this.searchParams.order.indexOf('2') != -1
+    },
+    isAsc(){
+      return this.searchParams.order.indexOf('asc') != -1
+    },
+    isDesc(){
+      return this.searchParams.order.indexOf('desc') != -1
+    }
   },
   methods: {
     // 向服务器发送请求获取search模块数据（根据参数不同返回不同的数据进行展示）
@@ -261,6 +236,41 @@ export default {
       // 再次整理参数
       this.searchParams.props.splice(index,1)
       // 参数变了就再发请求
+      this.getData()
+    },
+    // 排序的操作
+    changeOrder(flag){
+      // flag形参：他是一个标记，代表用户点击的是综合（1）还是价格（2）【用户点击的时候传递过来的】
+      let originOrder = this.searchParams.order
+      // 这里获取到的是当前的状态
+      let originFlag = this.searchParams.order.split(":")[0]
+      let originSort = this.searchParams.order.split(":")[1]
+      let newOrder = ''
+
+      // console.log(flag);
+      // console.log(originFlag);
+      // 好像模板字符串中有普通字符串要把普通字符串当成变量包裹着使用
+      // 直接 `${flag}:'desc'` 是不允许的，
+      if(originFlag == flag){
+          if(originSort == 'asc'){
+            newOrder = `${flag}:${'desc'}`
+            console.log('asc');
+          }else{
+            newOrder = `${flag}:${'asc'}`
+            console.log('desc');
+          }
+      }else{
+        newOrder = `${flag}:${'desc'}`
+        // console.log('xxx');
+      }
+      // 再次发起请求
+      this.searchParams.order = newOrder
+      this.getData()
+
+    },
+    // 获取当前页的操作
+    getPageNo(page){
+      this.searchParams.pageNo = page
       this.getData()
     }
   },

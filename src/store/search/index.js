@@ -37,6 +37,9 @@ export default {
         },
         attrsList(state){
             return state.searchList.attrsList || []
+        },
+        total(state){
+            return state.searchList.total 
         }
 
 

@@ -1,9 +1,14 @@
 import {reqGoodsInfo} from '@/api'
+import {reqAddOrUpdateShopCart} from '@/api'
+// 封装游客身份模块uuid --> 生成一个随机字符串(不能再变)
+import {getUUID} from '@/utils/uuid_token.js'
 
 export default {
     namespaced:true,
     state : {
-        goodInfo:{}
+        goodInfo:{},
+        // 游客临时身份
+        uuid_token:getUUID()
     },
     getters:{
         // 路径导航简化的数据
@@ -29,8 +34,25 @@ export default {
             if(GoodsInfo.code == 200){
                 context.commit('GETGOODINFO',GoodsInfo.data)
             }
+        },
+        // 将产品添加到购物车中
+        async addOrUpdateShopCart(context,{skuId,skuNum}){
+            // 加入购物车返回的解构
+            // 加入购物车以后（发请求），前台将参数带回给服务器
+            // 服务器写入数据成功，并没有返回其他的数据，只是返回 code = 200，代表这次操作成功
+            // 因为服务器没有返回其余数据，因此咱们不需要三连环存储数据
+            // 注意：async 函数执行返回的结果一定是一个promise，要么成功，要么失败
+            let result = await reqAddOrUpdateShopCart(skuId,skuNum)
+            // 代表服务器加入
+            if(result.code == 200){
+                return 'ok'
+            }else{
+                // 代表加入购物车失败
+                return Promise.reject(new Error('faile'))
+            }
             
         }
+        
     },
     mutations:{
         GETGOODINFO(state,goodInfo){

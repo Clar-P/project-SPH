@@ -8,6 +8,8 @@ import Search from '@/pages/Search'
 import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import Detail from '@/pages/Detail'
+import AddCartSuccess from '@/pages/AddCartSuccess'
+import ShopCart from '@/pages/ShopCart'
 
 /* console.log(VueRouter.prototype); */
 // 先把VueRouter原型对象的push保存一份
@@ -42,6 +44,18 @@ VueRouter.prototype.replace = function(location,resolve,reject){
 export default new VueRouter({
     // 配置路由
     routes:[
+        {
+            name:'ShopCart',
+            path:'/shopcart',
+            component:ShopCart,
+            mata:{showFooter:true}
+        },
+        {
+            name:'AddCartSuccess',
+            path:'/addcartsuccess',
+            component:AddCartSuccess,
+            meta:{showFooter:true}
+        },
         {
             path:'/detail/:skuId',
             component:Detail,

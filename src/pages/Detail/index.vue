@@ -80,7 +80,10 @@
                 <a href="javascript:" class="mins" @click="skuNum >1 ? skuNum -- : skuSum = 1">-</a>
               </div>
               <div class="add">
-                <a href="javascript:">加入购物车</a>
+                <!-- 以前咱们的路由跳转，从A路由跳转到B路由，这里在加入购物车，进行路由跳转之前，发请求
+                    把购买产品的信息通过请求的形式通知服务器，服务器进行相应的存储
+                -->
+                <a @click="addShopCar">加入购物车</a>
               </div>
             </div>
           </div>
@@ -331,7 +334,7 @@
 </template>
 
 <script>
-  import ImageList from './ImageList/ImageList'
+import ImageList from './ImageList/ImageList'
   import Zoom from './Zoom/Zoom'
   import {mapGetters} from 'vuex'
 
@@ -374,6 +377,32 @@
           // 正常大于1【大于1但是不能出现小数】
           this.skuNum = Math.floor(value)
         }
+      },
+      // 加入购物车的回调函数
+      async addShopCar(){
+        // 1：发请求-- 将产品加入到数据库（通知服务器）
+        // 当前这里是派发了一个action，也向服务器发起请求了
+        // 判断加入购物车是失败了还是成功了 ,进行相应的操作 
+        // 2: 服务器存储成功-- 进行路由跳转传递参数
+        // 3：失败，给用户进行提示
+        // 4:在路由跳转的时候还需要将产品的信息带给下一级路由组件
+        // 一些简单的数据 skuNum 通过query形式给路由组件传递过去
+        // 产品信息的数据【比较复杂：skuInfo】，通过会话存储（不持久化，会话结束数据再消失）
+        // 本地存储|会话存储，一般存储的是字符串
+        try {
+          await this.$store.dispatch('detail/addOrUpdateShopCart',{
+            skuId:this.$route.params.skuId,
+            skuNum:this.skuNum})
+          // 进行路由跳转
+          // 本地存储|会话存储，一般存储的是字符串
+          sessionStorage.setItem('SKUINFO',JSON.stringify(this.skuInfo))
+          this.$router.push({name:'AddCartSuccess',query:{skuNum:this.skuNum,skuId:this.$route.params.skuId}})
+        }catch(error){
+          // 添加失败
+          alert(error,message)
+        }
+
+        
       }
     }
   }

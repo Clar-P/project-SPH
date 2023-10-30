@@ -29,9 +29,17 @@ requests.interceptors.request.use((config) => {
         config.headers.userTempId = store.state.detail.uuid_token
     }
     // console.log(store);
+    // 需要携带token带给服务器
+    if(store.state.user.token){
+        config.headers.token = store.state.user.token
+    }
+
+
     // 进度条开始动
     nprogress.start();
     return config
+
+    
 })
 
 // 响应拦截器

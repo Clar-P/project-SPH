@@ -29,6 +29,8 @@ export default {
     mounted(){
       // 派发action，获取floor组件数据
       this.$store.dispatch('home/getFloorList')
+      // 派发actions,获取用户信息在首页展示
+      this.$store.dispatch('user/getUserInfo')
     },
     computed:{
       ...mapState('home',['floorList'])

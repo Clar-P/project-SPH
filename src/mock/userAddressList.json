@@ -1,0 +1,36 @@
+    [
+        {
+            "id": 1361,
+            "userAddress": "云南省昆明市",
+            "fullAddress":"云南省昆明市呈贡区",
+            "userId": 2,
+            "consignee": "浦京",
+            "provinceId": 2,
+            "phoneNum": "15011111111",
+            "isDefault": "1",
+            "regionId":1
+        },
+        {
+            "id": 1435,
+            "userAddress": "江苏省南京市",
+            "fullAddress":"江苏省南京市玄武区",
+            "userId": 3,
+            "consignee": "李云霄",
+            "provinceId": 6,
+            "phoneNum": "15022222222",
+            "isDefault": "0",
+            "regionId":2
+        },
+        {
+            "id": 1362,
+            "userAddress": "广东省深圳市",
+            "fullAddress":"广东省深圳市宝安区",
+            "userId": 4,
+            "consignee": "玄天机",
+            "provinceId": 32,
+            "phoneNum": "15033333333",
+            "isDefault": "0",
+            "regionId":3
+        }
+        
+    ]

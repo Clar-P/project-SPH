@@ -10,6 +10,15 @@ import Register from '@/pages/Register'
 import Detail from '@/pages/Detail'
 import AddCartSuccess from '@/pages/AddCartSuccess'
 import ShopCart from '@/pages/ShopCart'
+import Trade from '@/pages/Trade'
+import Pay from '@/pages/Pay'
+import PaySuccess from '@/pages/PaySuccess'
+import Center from '@/pages/Center'
+// 引入二级路由
+import myOrder from '@/pages/Center/myOrder'
+import groupOrder from '@/pages/Center/groupOrder'
+
+import store from '@/store'
 
 /* console.log(VueRouter.prototype); */
 // 先把VueRouter原型对象的push保存一份
@@ -41,9 +50,42 @@ VueRouter.prototype.replace = function(location,resolve,reject){
 }
 
 //配置路由
-export default new VueRouter({
+let  router =  new VueRouter({
     // 配置路由
     routes:[
+        {
+            name:'Center',
+            path:'/center',
+            component:Center,
+            // 二级路由组件
+            children:[
+                {
+                    name:'myOrder',
+                    component:myOrder,
+                    path:'myorder'
+                },
+                {
+                    name:'groupOrder',
+                    component:groupOrder,
+                    path:'grouporder'
+                }
+            ],
+            redirect:'/center/myorder'
+
+        },
+        {
+            name:'PaySuccess',
+            path:'/paysuccess',
+            component:PaySuccess,
+            meta:{showFooter:true}
+
+        },
+        {
+            name:'Pay',
+            path:'/pay',
+            component:Pay,
+            mata:{showFooter:true}
+        },
         {
             name:'ShopCart',
             path:'/shopcart',
@@ -98,6 +140,11 @@ export default new VueRouter({
             component:Register,
             meta:{showFooter:false}
         },
+        {
+            path:'/trade',
+            component:Trade,
+
+        }
     ],
     // 滚动行为
     scrollBehavior(to,from,savedPosition){
@@ -105,3 +152,49 @@ export default new VueRouter({
         return {x:0,y:0}
     }
 })
+
+// 全局守卫：前置守卫（在路由跳转之间进行判断）
+router.beforeEach(async (to,from,next) => {
+    // to: 可以获取到你要跳转到哪一个路由信息
+    // from : 可以获取到你从那个路由来的信息
+    // next : 放行函数 next() 直接放行    next(path) 放行到指定路由    next(false)中断放行，驳回原路由
+    // next()
+
+
+    // 用户登录了。才会有token，未登录一定不会有token
+    let token = store.state.user.token
+    // 用户信息
+    let name = store.state.user.userInfo.name
+
+    // 用户已经登录了
+    if(token){
+        // 用户已经登录了还想去login {不给去，停留在首页}
+        if(to.path=='/login'){
+            next('/home')
+        }else{
+            // 登录了，去的不是login【home|detail|search|shopcart】
+            // 如果用户名已有
+            if(name){
+                next()
+            }else{
+                // 没有用户信息，派发action让仓库存储用户信息再跳转
+                try{
+                    await store.dispatch('user/getUserInfo')
+                    // 放行
+                    next()
+                }catch(error){
+                    //token 失效了获取不到用户信息，重新登录
+                    // 清除token
+                    await store.dispatch('user/userLogout')
+                    next('/login')
+                }
+            }
+        }
+
+    }else{
+        // 为登录先不处理
+        next()
+    }
+})
+
+export default router

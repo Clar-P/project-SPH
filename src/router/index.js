@@ -3,7 +3,8 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 // 使用插件
 Vue.use(VueRouter)
-import Home from '@/pages/Home'
+// 用了路由懒加载后就不用这样引入了
+// import Home from '@/pages/Home'
 import Search from '@/pages/Search'
 import Login from '@/pages/Login'
 import Register from '@/pages/Register'
@@ -77,14 +78,28 @@ let  router =  new VueRouter({
             name:'PaySuccess',
             path:'/paysuccess',
             component:PaySuccess,
-            meta:{showFooter:true}
+            meta:{showFooter:true},
+            beforeEnter: (to, from, next) => {
+                if(from.path == '/pay'){
+                    next()
+                }else{
+                    next(false)
+                }
+            }
 
         },
         {
             name:'Pay',
             path:'/pay',
             component:Pay,
-            mata:{showFooter:true}
+            mata:{showFooter:true},
+            beforeEnter: (to, from, next) => {
+                if(from.path == '/trade'){
+                    next()
+                }else{
+                    next(false)
+                }
+            }
         },
         {
             name:'ShopCart',
@@ -109,7 +124,7 @@ let  router =  new VueRouter({
         },
         {
             path:'/home',
-            component:Home,
+            component: () => import('@/pages/Home'),
             meta:{showFooter:true}
         },
         {
@@ -192,8 +207,19 @@ router.beforeEach(async (to,from,next) => {
         }
 
     }else{
-        // 为登录先不处理
-        next()
+        // 未登录，不能去交易相关、不能去支付相关（pay|paysuccess）、不能去个人中心
+        // 未登录不能去上面这些路由---登录
+        let toPath = to.path
+        if(toPath.indexOf('/trade') != -1 || toPath.indexOf('/pay')  != -1  || toPath.indexOf('/center') != -1){
+            // 把未登录的时候想去而没有去成的信息，存储在地址栏中【路由】
+            // 再去登录组件条件判断  这样做目的是为了没登录时想去的路由保存下来。登录以后就能直接跳转，而不是跳转到首页重新点进去
+            // 这步很重要
+            next('/login?redirect=' + toPath)
+        }else{
+            // 去的不是上面这些路由(home|search|shopcart) -- 放行
+            next()
+        }
+        
     }
 })
 

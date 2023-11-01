@@ -35,6 +35,14 @@ import 'swiper/css/swiper.css'
 // 统一引入，不用每一个组件都引入
 import * as API from '@/api'
 
+// 图片懒加载
+import VueLazyload from 'vue-lazyload'
+import lazygif from '@/assets/lazy.gif'
+Vue.use(VueLazyload,{
+  // 图片没加载出来之前显示的图片
+  loading:lazygif
+})
+
 
 new Vue({
   render: h => h(App),

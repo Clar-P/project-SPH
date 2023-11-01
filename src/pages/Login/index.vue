@@ -80,8 +80,26 @@
         try{
           const {phone,password} = this;
           (phone&&password) && (await this.$store.dispatch('user/userLogin',{phone,password}));
+          // 进行条件判断，如果没登录想去的地方需要登录则在登录后直接去，而不是去首页组件
           // 跳转到home首页
-          this.$router.push('/home')
+          // this.$router.push('/home')
+          // console.log(this.$route.query);
+
+          /* 
+          我写的
+          if(this.$route.query.redirect){
+            let path = this.$route.query.redirect
+            this.$router.push(`${path}`)
+          }else{
+            this.$router.push('/home')
+          } 
+          */
+
+          // 老师写的
+          let toPath = this.$route.query.redirect || '/home'
+          this.$router.push(toPath)
+
+          
         }catch(error){
           alert(error.message)
         }

@@ -31,6 +31,7 @@ export default {
       this.$store.dispatch('home/getFloorList')
       // 派发actions,获取用户信息在首页展示
       this.$store.dispatch('user/getUserInfo')
+      // console.log(22222);
     },
     computed:{
       ...mapState('home',['floorList'])
